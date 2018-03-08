@@ -70,7 +70,7 @@ app.get("/weather/historical/:id",function(req,res){
         }
         else{
             if(weatherRec.length>0){
-                res.status(200).send(weatherRec);
+                res.status(200).send(weatherRec[0]);
             }
             else{
               res.status(404).send(" 404 Not Found");
@@ -92,7 +92,62 @@ app.delete("/weather/historical/:id",function(req,res){
     });
 });
 
+//forecast route
+app.get("/weather/forecast/:id",function(req,res){
+    var completeDate=req.params.id;
+    var year =completeDate.substring(0,4);
+    var month = completeDate.substring(4,6);
+    var stringDate= completeDate.substring(6,8);
+    var intDate = parseInt(stringDate);
+    
+    var forecastYearMonth = year+month;
+    
+    //fetch last year's weather record of same date
+    var lastyear= year-1;
+    var queryLastYear =lastyear+month;
+    
+    
+    //fetching 7 weather records from last year during the same month
+    Weather.find({'DATE':{$regex : "^" + queryLastYear}},'-_id',{sort: {'DATE': 1},limit: 7},function(err,weatherRec){
+        if(err){
+          console.log(err);
+        }
+        else{
+            var futuredates =[];
+            futuredates[0]=completeDate;
+            var nextDate= intDate;
+            
+            for(var i=1;i<=6;i++)
+            {
+                nextDate+=1;
+                var nextDate=nextDate.toString();
+                console.log(nextDate);
+                if(nextDate.length==1){
+                    var formDate = forecastYearMonth+'0'+nextDate;
+                }
+                else{
+                    var formDate = forecastYearMonth+nextDate;
+                }
+                
+                futuredates.push(formDate);
+                nextDate = parseInt(nextDate);
+            }
+            
+            var forecastFinal = [];
+            for(var i=0;i<=6;i++){
+                var date =futuredates[i];
+                var tmax =weatherRec[i]["TMAX"];
+                var tmin = weatherRec[i]["TMIN"];
+                var addToForecast={DATE:date,TMAX:tmax,TMIN:tmin};
+                forecastFinal.push(addToForecast);
+            }
+          if(forecastFinal.length>0){
+                res.status(200).send(forecastFinal);
+            }
+        }
+    });
+});
 
-app.listen(process.env.PORT,process.env.IP,function(){
+app.listen(3000,function(){
     console.log("Weather Data server has started");
 });
