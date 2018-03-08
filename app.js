@@ -43,10 +43,6 @@ app.get("/weather/historical",function(req,res){
 
 
 app.post("/weather/historical",function(req,res){
-    // var DATE = req.body.DATE;
-    // var TMAX = req.body.TMAX;
-    // var TMIN = req.body.TMIN;
-    // var newWeatherDate = {DATE:DATE,TMAX:TMAX,TMIN:TMIN};
     var newWeatherDate = req.body;
     console.log(newWeatherDate);
     Weather.create(newWeatherDate,function(err,newWeather){
